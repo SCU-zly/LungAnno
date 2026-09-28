@@ -1,0 +1,88 @@
+# 密钥与本地环境
+.env
+backend/.env
+
+# 依赖与构建产物
+node_modules/
+frontend/dist/
+__pycache__/
+*.pyc
+
+# 数据与大型工件（不入库）
+data/
+errors/
+
+# 工具本地状态
+.codegraph/
+.claude/
+
+# DeepLung 内部模型资产防线（权重/内部代码/容器构建产物绝不入库）
+*.ckpt
+*.pt
+*.pth
+**/ProcByModel/
+
+# 日志与临时文件
+*.log
+.DS_Store
+
+# 内部文档与规划工具状态（不入库、不公网）
+HANDOVER.md
+.workflow/
+deploy/deeplung/import_deeplung_results.py
+
+# 本地环境、密钥与虚拟环境
+.env.*
+!.env.example
+.venv/
+venv/
+env/
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# 影像、临床表、导出、传输包与模型资产
+*.dcm
+*.DCM
+*.dicom
+*.nii
+*.nii.gz
+*.mhd
+*.mha
+*.nrrd
+*.npy
+*.npz
+*.htj2k
+*.j2c
+*.xlsx
+*.xls
+*.csv
+*.tsv
+*.parquet
+*.sql
+*.dump
+*.sqlite*
+*.db
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+*.onnx
+*.safetensors
+logs/
+bundles/
+backups/
+/models/
+/backend/models/
+ct-storage/
+
+# 部署现场与工具状态
+AGENTS.md
+deploy/public-entry/
+.codex/
+.pytest_cache/

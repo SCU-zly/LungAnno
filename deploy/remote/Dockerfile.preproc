@@ -1,0 +1,7 @@
+# 远端预处理容器：与后端 app/worker/preprocess.py 同算法的独立运行环境。
+# 构建（在 deploy/remote 目录）:  docker build -f Dockerfile.preproc -t ctanno-preproc:1.0 .
+FROM python:3.11-slim
+
+RUN pip install --no-cache-dir numpy SimpleITK pydicom
+
+COPY preprocess_series.py /opt/preprocess_series.py

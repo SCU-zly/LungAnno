@@ -1,0 +1,96 @@
+# CT 影像智能标注系统 — 开发环境编排
+#
+# 用法：
+#   docker compose up -d                    # 启动 PG + Redis + API + Worker
+#   docker compose up -d --build             # 修改依赖后重建
+#
+# 前端（Vite dev server）在本机运行：cd frontend && npm run dev
+# 健康检查：http://localhost:8000/health
+services:
+  postgres:
+    image: postgres:16
+    container_name: ctanno-pg
+    restart: unless-stopped  # 断电/重启后随 docker daemon 自动拉起
+    environment:
+      POSTGRES_USER: ctanno
+      POSTGRES_PASSWORD: ctanno
+      POSTGRES_DB: ctanno
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ctanno -d ctanno"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: ctanno-redis
+    restart: unless-stopped  # 断电/重启后随 docker daemon 自动拉起
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: python:3.12-slim
+    container_name: ctanno-api
+    working_dir: /app
+    command: >
+      sh -c "pip install -r requirements.txt -q &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./backend:/app
+      - ${STORAGE_ROOT:-/data/ct-storage}:/data/ct-storage
+    environment:
+      DATABASE_URL: postgresql://ctanno:ctanno@postgres:5432/ctanno
+      REDIS_URL: redis://redis:6379
+      STORAGE_ROOT: /data/ct-storage
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-in-production}
+      MODEL_BUNDLE_ROOT: /data/ct-storage/models
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    image: python:3.12-slim
+    container_name: ctanno-worker
+    working_dir: /app
+    command: >
+      sh -c "pip install -r requirements.txt -q &&
+             python -m arq app.worker.run_worker.WorkerSettings"
+    volumes:
+      - ./backend:/app
+      - ${STORAGE_ROOT:-/data/ct-storage}:/data/ct-storage
+    environment:
+      DATABASE_URL: postgresql://ctanno:ctanno@postgres:5432/ctanno
+      REDIS_URL: redis://redis:6379
+      STORAGE_ROOT: /data/ct-storage
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-in-production}
+      MODEL_BUNDLE_ROOT: /data/ct-storage/models
+    depends_on:
+      api:
+        condition: service_started
+
+  # 生产前端：nginx 托管 frontend/dist + /api 反代（替代 vite dev 公网暴露）
+  # 前置：cd frontend && npm run build（产出 dist 后再启动本服务）
+  web:
+    image: nginx:alpine
+    container_name: ctanno-web
+    network_mode: host  # 直接监听宿主 8080；proxy_pass 127.0.0.1:8000 达宿主 uvicorn
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./deploy/nginx-local.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+
+volumes:
+  pg_data:
