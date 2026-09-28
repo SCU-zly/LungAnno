@@ -1,6 +1,6 @@
 """独立版序列预处理：DICOM 目录 → volume.nii.gz + meta.json。
 
-与 DeepAnno 后端 app/worker/preprocess.py 的算法逐项对齐（重采样目标网格、
+与 LungAnno 后端 app/worker/preprocess.py 的算法逐项对齐（重采样目标网格、
 int16 落盘、meta.json schema），供远端服务器在无后端/无 DB 环境下产出
 可直接导入本系统的预处理产物。坐标映射依赖 meta.json 的
 original_spacing / spacing / preprocessed_shape，schema 不可擅改。

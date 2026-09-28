@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth";
 import api from "../api/client";
-import logo from "../assets/logo.jpg";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -42,7 +41,7 @@ export default function Login() {
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
       <form onSubmit={handleSubmit} style={{ background: "var(--card)", padding: 40, borderRadius: 8, boxShadow: "0 1px 3px rgba(0,0,0,.1)", width: 360 }}>
-        <img src={logo} alt="DeepLN标注系统" style={{ display: "block", width: 280, maxWidth: "100%", margin: "0 auto 24px" }} />
+        <h1 style={{ color: "var(--primary)", fontSize: 36, fontWeight: 700, textAlign: "center", margin: "0 0 24px" }}>LungAnno</h1>
         {error && <p style={{ color: "var(--danger)", textAlign: "center", marginBottom: 12 }}>{error}</p>}
         <input placeholder="用户名" value={username} onChange={(e) => setUsername(e.target.value)} style={inputStyle} autoFocus />
         <input type="password" placeholder="密码" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} />
